@@ -20,6 +20,12 @@ class VirtualSnack(npyscreen.Form):
 	
 	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now(), editable=False)
         self.date_widget.value = "Hello"
+	self.add_handlers({"^T": self.exit_application})
+
+
+    def exit_application(self,name):
+        self.parentApp.setNextForm(None)
+        self.editing = False
 
 
 class VirtualSnackApp(npyscreen.NPSAppManaged):
