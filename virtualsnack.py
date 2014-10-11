@@ -1,16 +1,32 @@
 #!/usr/bin/env python
 import npyscreen
+from datetime import datetime
 
-class VirtualSnack(npyscreen.FormMutt):
-    MAIN_WIDGET_CLASS = npyscreen.MultiLineEdit
+class VirtualSnack(npyscreen.Form):
 
-class VirtualSnackApp(npyscreen.NPSApp):
-    def main(self):
-        F = VirtualSnack()
-        F.wStatus1.value = "Virtual Snack"
-        F.wStatus2.value = "Last Command"
-        
-        F.edit()
+    def while_waiting(self):
+        self.date_widget.value = datetime.now()
+        self.display()
+
+    def create(self, *args, **keywords):
+        super(VirtualSnack, self).create(*args, **keywords)
+
+        self.wStatus1 = self.add(npyscreen.FixedText, value="Last Command", editable=False)
+
+
+        self.wStatus2 = self.add(npyscreen.FixedText, value="", editable=False)
+
+        self.wStatus1.important = True
+	
+	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now(), editable=False)
+        self.date_widget.value = "Hello"
+
+
+class VirtualSnackApp(npyscreen.NPSAppManaged):
+    keypress_timeout_default = 2
+
+    def onStart(self):
+	self.addForm("MAIN", VirtualSnack, name="Virtual Snack")
 
 
 if __name__ == "__main__":
