@@ -2,6 +2,11 @@
 import npyscreen
 from datetime import datetime
 
+# Incorporates code
+# from http://www.binarytides.com/python-socket-server-code-example/
+# Socket server in python using select function
+import socket, select
+
 class ContainedMultiSelect(npyscreen.BoxTitle):
     _contained_widget = npyscreen.TitleMultiSelect
 
@@ -9,7 +14,10 @@ class VirtualSnack(npyscreen.Form):
 
     def while_waiting(self):
         self.date_widget.value = datetime.now().ctime()
+	self.sentfield.value = self.parentApp.sent
+	self.receivedfield.value = self.parentApp.received
         self.display()
+
 
     def create(self, *args, **keywords):
         super(VirtualSnack, self).create(*args, **keywords)
@@ -48,6 +56,9 @@ class VirtualSnack(npyscreen.Form):
 	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False)
         self.date_widget.value = "Hello"
 	self.add_handlers({"^T": self.exit_application})
+        
+	self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False )
+        self.receivedfield = self.add(npyscreen.TitleText, name = "Received:", value="", editable=False )
 
     def exit_application(self,name):
         self.parentApp.setNextForm(None)
@@ -55,11 +66,66 @@ class VirtualSnack(npyscreen.Form):
 
 
 class VirtualSnackApp(npyscreen.NPSAppManaged):
-    keypress_timeout_default = 2
+    keypress_timeout_default = 1
 
     def onStart(self):
 	self.addForm("MAIN", VirtualSnack, name="Virtual Snack")
+	
+	# socket code
+    	self.CONNECTION_LIST = []    # list of socket clients
+    	self.RECV_BUFFER = 4096 # Advisable to keep it as an exponent of 2
+    	PORT = 5000
 
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # this has no effect, why ?
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(("0.0.0.0", PORT))
+        self.server_socket.listen(10)
+     
+        # Add server socket to the list of readable connections
+        self.CONNECTION_LIST.append(self.server_socket)
+
+	self.sent=""
+	self.received="Chat server started on port " + str(PORT)
+
+    def while_waiting(self):
+        # Get the list sockets which are ready to be read through select
+        read_sockets,write_sockets,error_sockets = select.select(self.CONNECTION_LIST,[],[],0.01)
+ 
+        for sock in read_sockets:
+             
+            #New connection
+            if sock == self.server_socket:
+                # Handle the case in which there is a new connection recieved through self.server_socket
+                sockfd, addr = self.server_socket.accept()
+                self.CONNECTION_LIST.append(sockfd)
+                self.received = "Client (%s, %s) connected" % addr
+                 
+                #Some incoming message from a client
+            else:
+                # Data recieved from client, process it
+                try:
+                    #In Windows, sometimes when a TCP program closes abruptly,
+                    # a "Connection reset by peer" exception will be thrown
+                    data = sock.recv(self.RECV_BUFFER)
+                    # echo back the client message
+                    if data:
+			response = 'OK ... ' + data
+                        sock.send(response)
+			self.sent = response
+			self.received = data
+                 
+                 
+                # client disconnected, so remove from socket list
+                except:
+                    #print "Client (%s, %s) is offline" % addr
+                    sock.close()
+                    self.CONNECTION_LIST.remove(sock)
+                    continue
+             
+
+    def onCleanExit(self):
+        self.server_socket.close()
 
 if __name__ == "__main__":
     App = VirtualSnackApp()
