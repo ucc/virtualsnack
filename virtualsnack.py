@@ -55,7 +55,7 @@ class VirtualSnack(npyscreen.Form):
 	
 	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False)
         self.date_widget.value = "Hello"
-	self.add_handlers({"^T": self.exit_application})
+	self.add_handlers({"^Q": self.exit_application})
         
 	self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False )
         self.receivedfield = self.add(npyscreen.TitleText, name = "Received:", value="", editable=False )
