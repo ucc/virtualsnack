@@ -33,14 +33,14 @@ class VirtualSnack(npyscreen.Form):
         self.date_widget.value = datetime.now().ctime()
 	self.sentfield.value = self.parentApp.sent
 	self.receivedfield.value = self.parentApp.received
+	self.textdisplay.value = self.parentApp.textdisplay
         self.display()
 
 
     def create(self, *args, **keywords):
         super(VirtualSnack, self).create(*args, **keywords)
 
-
-        self.textdisplay = self.add(npyscreen.FixedText, value="*5N4CK0RZ*", editable=False, relx=9)
+        self.textdisplay = self.add(npyscreen.FixedText, value=self.parentApp.textdisplay, editable=False, relx=9)
         self.textdisplay.important = True
 	
 	self.kpbuttons = []
@@ -86,6 +86,12 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
     keypress_timeout_default = 1
 
     def onStart(self):
+	# initialise virtual vending machine
+        # vending machine password set here
+        self.vendpw = "AAAAAAAAAAAAAAAA"
+        self.switches = Switches()
+	self.textdisplay = "*5N4CK0RZ*"
+
 	self.addForm("MAIN", VirtualSnack, name="Virtual Snack")
 	
 	# socket code
@@ -218,9 +224,7 @@ Mark Tearle, October 2014
             self.do_send("100 Vend successful\n")
 
     def do_display(self,string):
-	# FIXME
-        # display = self.wTree.get_widget("label1")
-        # display.set_text("%-10.10s" % (string))
+        self.textdisplay = "%-10.10s" % (string)
         self.do_send('300 Written\n')
 
     def do_beep(self,command):
@@ -238,7 +242,6 @@ Mark Tearle, October 2014
 
     def handle_command(self, command):
         command = string.upper(command)
-        print command
         if string.find(command, "HELP",0) == 0:
             self.do_help()
         elif string.find(command, "ABOUT",0) == 0:
@@ -318,11 +321,7 @@ if __name__ == "__main__":
 #
 #        display.set_text("*5N4CK0RZ*")
 #
-#        # vending machine password set here
-#        self.vendpw = "AAAAAAAAAAAAAAAA"
-#
 #        self.messageid = None
-#        self.switches = Switches()
 #
 #        #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #        #s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
