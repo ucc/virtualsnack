@@ -48,7 +48,7 @@ class VirtualSnack(npyscreen.Form):
 	for keypad in range(0,10):
 		kpx = ((keypad % 4) * 6 ) + 3
 		kpy = int(keypad / 4) + 4
-		self.kpbuttons.append(self.add(npyscreen.MiniButton,name="%d"%keypad, relx = kpx, rely = kpy))
+		self.kpbuttons.append(self.add(npyscreen.MiniButton,name="%d"%keypad, relx = kpx, rely = kpy, value_changed_callback=self.parentApp.when_keypad_pressed))
 		
 	self.reset= self.add(npyscreen.MiniButton,name="RESET",  relx = kpx + 7, rely = kpy, value_changed_callback=self.parentApp.when_reset_pressed)
 
@@ -91,7 +91,7 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
         self.switches = Switches()
 	self.textdisplay = "*5N4CK0RZ*"
 
-	self.addForm("MAIN", VirtualSnack, name="Virtual Snack")
+	self.F = self.addForm("MAIN", VirtualSnack, name="Virtual Snack")
 	
 	# socket code
     	self.CONNECTION_LIST = []    # list of socket clients
@@ -178,7 +178,13 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
     def when_reset_pressed(self, *args, **keywords):
         self.do_send('211 keypress\n')
         keywords['widget'].value = False
-        keywords['widget'].display()
+	self.F.display()
+
+    def when_keypad_pressed(self, *args, **keywords):
+	key = '0'+ keywords['widget'].name
+        self.do_send('2'+key+' keypress\n')
+        keywords['widget'].value = False
+	self.F.display()
 
     # Snack Emulator code below
 
@@ -363,15 +369,6 @@ if __name__ == "__main__":
 #                pass
 #
 #####CALLBACKS
-
-# FIXME
-#    def keypad_clicked(self,widget):
-#        key = widget.get_label()
-#        if key == 'RESET':
-#            key = '11'
-#        else:
-#            key = '0'+key
-#        self.do_send('2'+key+' keypress\n')
 
 # FIXME
 #    def handleNewConnection(self,source,condition):
