@@ -36,7 +36,6 @@ class VirtualSnack(npyscreen.Form):
 	self.textdisplay.value = self.parentApp.textdisplay
         self.display()
 
-
     def create(self, *args, **keywords):
         super(VirtualSnack, self).create(*args, **keywords)
 
@@ -53,7 +52,7 @@ class VirtualSnack(npyscreen.Form):
 		
 	self.reset= self.add(npyscreen.MiniButton,name="RESET",  relx = kpx + 7, rely = kpy)
 
-	self.dip = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 10, max_height=4, value = [], values = ["DOOR"], scroll_exit=True)
+	self.dip = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 10, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
 	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width = 45, rely =3, relx = 30, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
 
@@ -164,6 +163,18 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
 		sock.send(data)
 
 	self.sent = data
+
+
+    # Callbacks
+    def when_door_toggled(self, *args, **keywords):
+# See 
+#  https://code.google.com/p/npyscreen/source/detail?r=9768a97fd80ed1e7b3e670f312564c19b1adfef8#
+# for callback info
+        if keywords['widget'].get_selected_objects():
+            self.do_send('401 door closed\n')
+        else:
+            self.do_send('400 door open\n')
+
 
     # Snack Emulator code below
 
@@ -357,14 +368,6 @@ if __name__ == "__main__":
 #        else:
 #            key = '0'+key
 #        self.do_send('2'+key+' keypress\n')
-
-# FIXME
-#    def door_changed(self, widget):
-#        self.switches.set_door_open(not widget.get_active())
-#        if widget.get_active():
-#            self.do_send('401 door closed\n')
-#        else:
-#            self.do_send('400 door open\n')
 
 # FIXME
 #    def handleNewConnection(self,source,condition):
