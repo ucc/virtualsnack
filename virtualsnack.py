@@ -50,7 +50,7 @@ class VirtualSnack(npyscreen.Form):
 		kpy = int(keypad / 4) + 4
 		self.kpbuttons.append(self.add(npyscreen.MiniButton,name="%d"%keypad, relx = kpx, rely = kpy))
 		
-	self.reset= self.add(npyscreen.MiniButton,name="RESET",  relx = kpx + 7, rely = kpy)
+	self.reset= self.add(npyscreen.MiniButton,name="RESET",  relx = kpx + 7, rely = kpy, value_changed_callback=self.parentApp.when_reset_pressed)
 
 	self.dip = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 10, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
@@ -175,6 +175,10 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
         else:
             self.do_send('400 door open\n')
 
+    def when_reset_pressed(self, *args, **keywords):
+        self.do_send('211 keypress\n')
+        keywords['widget'].value = False
+        keywords['widget'].display()
 
     # Snack Emulator code below
 
