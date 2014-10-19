@@ -14,6 +14,15 @@ import string
 class ContainedMultiSelect(npyscreen.BoxTitle):
     _contained_widget = npyscreen.TitleMultiSelect
 
+class SnackButtonPress(npyscreen.MiniButtonPress):
+    def __init__(self, screen, when_pressed_function=None, when_pressed_callback=None, *args, **keywords):
+	super(SnackButtonPress, self).__init__(screen, *args, **keywords)
+	self.when_pressed_callback = when_pressed_callback
+
+    def whenPressed(self,key=None):
+	if self.when_pressed_callback:
+		self.when_pressed_callback(widget=self)
+
 class Switches:
     def __init__(self):
         self.misc_input = 0xff
@@ -48,20 +57,24 @@ class VirtualSnack(npyscreen.Form):
 	for keypad in range(0,10):
 		kpx = ((keypad % 4) * 6 ) + 3
 		kpy = int(keypad / 4) + 4
-		self.kpbuttons.append(self.add(npyscreen.MiniButton,name="%d"%keypad, relx = kpx, rely = kpy, value_changed_callback=self.parentApp.when_keypad_pressed))
+		widget = self.add(SnackButtonPress,name="%d"%keypad, relx = kpx, rely = kpy, when_pressed_callback=self.parentApp.when_keypad_pressed)
+		self.kpbuttons.append(widget)
+		self.add_handlers({"%d"%keypad: widget.whenPressed})
 		
-	self.reset= self.add(npyscreen.MiniButton,name="RESET",  relx = kpx + 7, rely = kpy, value_changed_callback=self.parentApp.when_reset_pressed)
+	self.reset=self.add(SnackButtonPress,name="RESET",  relx = kpx + 7, rely = kpy, when_pressed_callback=self.parentApp.when_reset_pressed)
+	self.add_handlers({"R": self.reset.whenPressed})
+	self.add_handlers({"r": self.reset.whenPressed})
 
 	self.dip = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 12, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
 	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 35, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
 
-	self.nickel= self.add(npyscreen.MiniButton,name="0.05", rely= 3, relx=50)
-	self.dime= self.add(npyscreen.MiniButton,name="0.10", relx=50)
-	self.quarter= self.add(npyscreen.MiniButton,name="0.25", relx=50)
-	self.dollar= self.add(npyscreen.MiniButton,name="1.00", relx=50)
+	self.nickel=self.add(SnackButtonPress,name="0.05", rely= 3, relx=50)
+	self.dime=self.add(SnackButtonPress,name="0.10", relx=50)
+	self.quarter=self.add(SnackButtonPress,name="0.25", relx=50)
+	self.dollar=self.add(SnackButtonPress,name="1.00", relx=50)
 
-	self.mode= self.add(npyscreen.MiniButton,name="MODE", relx=50)
+	self.mode=self.add(SnackButtonPress,name="MODE", relx=50)
 
 	
 	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False, rely=18)
