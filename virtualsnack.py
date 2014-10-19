@@ -52,9 +52,9 @@ class VirtualSnack(npyscreen.Form):
 		
 	self.reset= self.add(npyscreen.MiniButton,name="RESET",  relx = kpx + 7, rely = kpy, value_changed_callback=self.parentApp.when_reset_pressed)
 
-	self.dip = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 10, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
+	self.dip = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 12, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
-	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width = 45, rely =3, relx = 30, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
+	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 35, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
 
 	self.nickel= self.add(npyscreen.MiniButton,name="0.05", rely= 3, relx=50)
 	self.dime= self.add(npyscreen.MiniButton,name="0.10", relx=50)
@@ -63,17 +63,12 @@ class VirtualSnack(npyscreen.Form):
 
 	self.mode= self.add(npyscreen.MiniButton,name="MODE", relx=50)
 
-        self.wStatus1 = self.add(npyscreen.FixedText, value="Last Command", editable=False, relx=2, rely=12)
-        self.wStatus1.important = True
-
-        self.wStatus2 = self.add(npyscreen.FixedText, value="", editable=False)
-
 	
-	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False)
+	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False, rely=18)
         self.date_widget.value = "Hello"
 	self.add_handlers({"^Q": self.exit_application})
         
-	self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False )
+	self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False, rely=20 )
         self.receivedfield = self.add(npyscreen.TitleText, name = "Received:", value="", editable=False )
 
     def exit_application(self,name):
