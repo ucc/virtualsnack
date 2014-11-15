@@ -131,7 +131,7 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
                 self.CONNECTION_LIST.append(sockfd)
                 self.received = "Client (%s, %s) connected" % addr
 
-		self.do_send("# Virtual Snack\n")
+		self.do_send("000 Virtual Snack is alive \n")
 		self.do_prompt()
                  
                 #Some incoming message from a client
@@ -269,10 +269,15 @@ Mark Tearle, October 2014
     def do_pong(self):
         self.do_send("000 PONG!\n")
 
+    def do_echo(self):
+        self.do_send("000 Not implemented\n")
+
     def handle_command(self, command):
         command = string.upper(command)
         if string.find(command, "HELP",0) == 0:
             self.do_help()
+        elif string.find(command, "ECHO",0) == 0:
+            self.do_echo()
         elif string.find(command, "ABOUT",0) == 0:
             self.do_about()
         elif string.find(command, "PING",0) == 0:
