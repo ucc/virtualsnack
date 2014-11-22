@@ -5,7 +5,7 @@ from datetime import datetime
 # Incorporates code
 # from http://www.binarytides.com/python-socket-server-code-example/
 # Socket server in python using select function
-import socket, select
+import socket, select, errno
 
 # for emulator code
 import sys
@@ -154,7 +154,7 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
                 except:
                     #print "Client (%s, %s) is offline" % addr
                     sock.close()
-                    self.CONNECTION_LIST.remove(sock)
+                    #self.CONNECTION_LIST.remove(sock)
                     continue
              
 
@@ -168,7 +168,26 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
         read_sockets,write_sockets,error_sockets = select.select([],self.CONNECTION_LIST,[],0.01)
  
         for sock in write_sockets:
-		sock.send(data)
+		try:
+			sock.send(data)
+		except socket.error, e:
+			if isinstance(e.args, tuple):
+				self.sent = "errno is %d" % e[0]
+				if e[0] == errno.EPIPE:
+				# remote peer disconnected
+					self.sent = "Detected remote disconnect"
+				else:
+				# determine and handle different error
+					pass
+			else:
+				self.sent = "socket error ", e
+               		self.CONNECTION_LIST.remove(sock)
+			sock.close()
+			return
+		except IOError, e:
+			# Hmmm, Can IOError actually be raised by the socket module?
+			self.sent = "Got IOError: ", e
+			return
 
 	self.sent = data
 
