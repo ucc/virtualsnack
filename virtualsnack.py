@@ -40,17 +40,19 @@ class VirtualSnack(npyscreen.Form):
 
     def while_waiting(self):
         self.date_widget.value = datetime.now().ctime()
-	self.sentfield.value = self.parentApp.sent
-	self.receivedfield.value = self.parentApp.received
-	self.textdisplay.value = self.parentApp.textdisplay
+        self.sentfield.value = self.parentApp.sent
+        self.receivedfield.value = self.parentApp.received
+        self.textdisplay.value = self.parentApp.textdisplay
         self.display()
 
     def create(self, *args, **keywords):
         super(VirtualSnack, self).create(*args, **keywords)
 
+        # The display
         self.textdisplay = self.add(npyscreen.FixedText, value=self.parentApp.textdisplay, editable=False, relx=9)
-        self.textdisplay.important = True
-	
+	self.textdisplay.important = True
+
+        # The keypad
 	self.kpbuttons = []
 	kpx = 1
 	kpy = 1
@@ -60,27 +62,33 @@ class VirtualSnack(npyscreen.Form):
 		widget = self.add(SnackButtonPress,name="%d"%keypad, relx = kpx, rely = kpy, when_pressed_callback=self.parentApp.when_keypad_pressed)
 		self.kpbuttons.append(widget)
 		self.add_handlers({"%d"%keypad: widget.whenPressed})
-		
 	self.reset=self.add(SnackButtonPress,name="RESET",  relx = kpx + 7, rely = kpy, when_pressed_callback=self.parentApp.when_reset_pressed)
 	self.add_handlers({"R": self.reset.whenPressed})
 	self.add_handlers({"r": self.reset.whenPressed})
 
+        # The door switch
 	self.door = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 12, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
+        # The DIP switches
 	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 35, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
 
+        # The coin buttons
 	self.nickel=self.add(SnackButtonPress,name="0.05", rely= 3, relx=50)
 	self.dime=self.add(SnackButtonPress,name="0.10", relx=50)
 	self.quarter=self.add(SnackButtonPress,name="0.25", relx=50)
 	self.dollar=self.add(SnackButtonPress,name="1.00", relx=50)
-
+        # The mode button
 	self.mode=self.add(SnackButtonPress,name="MODE", relx=50)
 
-	
-	self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False, rely=18)
+        # Space for the current time
+        self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False, rely=18)
         self.date_widget.value = "Hello"
+
+        # Ctrl + Q exits the application
 	self.add_handlers({"^Q": self.exit_application})
+	self.add_handlers({"^C": self.exit_application})
         
+        # Display info about what has been comminucated to and by the vending machine
 	self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False, rely=20 )
         self.receivedfield = self.add(npyscreen.TitleText, name = "Received:", value="", editable=False )
 
@@ -91,6 +99,17 @@ class VirtualSnack(npyscreen.Form):
 
 class VirtualSnackApp(npyscreen.NPSAppManaged):
     keypress_timeout_default = 1
+
+    def start_listening(self):
+        self.PORT = 5150
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # this has no effect, why ?
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(("0.0.0.0", self.PORT))
+        self.server_socket.listen(10)
+        # Add server socket to the list of readable connections
+        self.CONNECTION_LIST.append(self.server_socket)
+	self.received="Chat server started on port " + str(self.PORT)
 
     def onStart(self):
 	# initialise virtual vending machine
@@ -104,23 +123,20 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
 	# socket code
     	self.CONNECTION_LIST = []    # list of socket clients
     	self.RECV_BUFFER = 4096 # Advisable to keep it as an exponent of 2
-    	PORT = 5150
 
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # this has no effect, why ?
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind(("0.0.0.0", PORT))
-        self.server_socket.listen(10)
-     
-        # Add server socket to the list of readable connections
-        self.CONNECTION_LIST.append(self.server_socket)
+	self.start_listening()
 
 	self.sent=""
-	self.received="Chat server started on port " + str(PORT)
 
     def while_waiting(self):
         # Get the list sockets which are ready to be read through select
-        read_sockets,write_sockets,error_sockets = select.select(self.CONNECTION_LIST,[],[],0.01)
+        try:
+	    read_sockets,write_sockets,error_sockets = select.select(self.CONNECTION_LIST,[],[],0.1)
+	except secket.error as e:
+	    self.CONNECTION_LIST = []
+	    self.start_listening()
+
+	    return
  
         for sock in read_sockets:
              
@@ -149,12 +165,11 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
 			#self.sent = response
 			self.received = data
                  
-                 
                 # client disconnected, so remove from socket list
-                except:
+                except socket.error as e:
                     #print "Client (%s, %s) is offline" % addr
                     sock.close()
-                    #self.CONNECTION_LIST.remove(sock)
+		    #self.CONNECTION_LIST.remove(sock)
                     continue
              
 
@@ -165,12 +180,12 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
     
     def do_send(self, data):
         # Get the list sockets which are ready to be written through select
-        read_sockets,write_sockets,error_sockets = select.select([],self.CONNECTION_LIST,[],0.01)
+        read_sockets,write_sockets,error_sockets = select.select([],self.CONNECTION_LIST,[],0.1)
  
         for sock in write_sockets:
 		try:
 			sock.send(data)
-		except socket.error, e:
+		except socket.error as e:
 			if isinstance(e.args, tuple):
 				self.sent = "errno is %d" % e[0]
 				if e[0] == errno.EPIPE:
@@ -184,7 +199,7 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
                		self.CONNECTION_LIST.remove(sock)
 			sock.close()
 			return
-		except IOError, e:
+		except IOError as e:
 			# Hmmm, Can IOError actually be raised by the socket module?
 			self.sent = "Got IOError: ", e
 			return
@@ -264,11 +279,9 @@ Mark Tearle, October 2014
 
     def do_vend(self,command):
         fail = None
-        if fail:
+	if fail:
             self.do_send("153 Home sensors failing\n")
         else:
-	# FIXME
-        #     self.insert("Vending "+command)
             self.do_send("100 Vend successful\n")
 
     def do_display(self,string):
@@ -313,8 +326,13 @@ Mark Tearle, October 2014
             self.do_switches()
         elif string.find(command, "D",0) == 0:
             self.do_display(command[1:])
-        self.do_prompt()
+	elif string.find(command, "#", 0) == 0:
+	    self.do_send("\n")
+	self.do_prompt()
 
 if __name__ == "__main__":
-    App = VirtualSnackApp()
-    App.run()
+	App = VirtualSnackApp()
+	try:
+		App.run()
+	except (KeyboardInterrupt):
+		print("Application Closed")
