@@ -10,6 +10,7 @@ import socket, select, errno
 # for emulator code
 import sys
 import string
+import time
 
 class ContainedMultiSelect(npyscreen.BoxTitle):
     _contained_widget = npyscreen.TitleMultiSelect
@@ -83,6 +84,26 @@ class VirtualSnack(npyscreen.Form):
         # Space for the current time
         self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False, rely=18)
         self.date_widget.value = "Hello"
+
+        self.slots = []
+        slotx = 0
+        sloty = 0
+
+        # The Virtual Vending Machine
+        for i in range(10):
+                self.add(npyscreen.FixedText, value=str(i), editable=False, relx=62, rely=4+i)
+        for slx in range(10):
+                self.slots.append([])
+                xpos = 64 + (slx * 2)
+                self.add(npyscreen.FixedText, value=str(slx), editable=False, relx=xpos, rely=3)
+                for sly in range(10):
+                        ypos = 4 + sly
+                        if sly == 5:
+                                self.slots[slx].append(None)
+                        else:
+                                self.slots[slx].append(self.add(npyscreen.FixedText, value="/", editable=False, relx=xpos, rely=ypos))
+
+        self.collectionslot = self.add(npyscreen.FixedText, value="PUSH", editable=False, relx=70, rely=15)
 
         # Ctrl + Q exits the application
 	self.add_handlers({"^Q": self.exit_application})
@@ -278,10 +299,13 @@ Mark Tearle, October 2014
         self.do_send("102 Vend all motors complete\n")
 
     def do_vend(self,command):
-        fail = None
-	if fail:
+        if self.F.slots[int(command[2])][int(command[1])] == None:
             self.do_send("153 Home sensors failing\n")
         else:
+            for pos in "-\|/-\|/":
+                self.F.slots[int(command[2])][int(command[1])].value = pos
+                self.F.display()
+                time.sleep(0.5)
             self.do_send("100 Vend successful\n")
 
     def do_display(self,string):
