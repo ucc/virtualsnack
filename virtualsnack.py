@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# coding: latin-1
+
 import npyscreen
 from datetime import datetime
 
@@ -72,15 +74,15 @@ class VirtualSnack(npyscreen.Form):
 	self.door = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 12, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
         # The DIP switches
-	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 35, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
+	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 30, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
 
         # The coin buttons
-	self.nickel=self.add(SnackButtonPress,name="0.05", rely= 3, relx=50)
-	self.dime=self.add(SnackButtonPress,name="0.10", relx=50)
-	self.quarter=self.add(SnackButtonPress,name="0.25", relx=50)
-	self.dollar=self.add(SnackButtonPress,name="1.00", relx=50)
+	self.nickel=self.add(SnackButtonPress,name="0.05", rely= 12, relx=33)
+	self.dime=self.add(SnackButtonPress,name="0.10", relx=33)
+	self.quarter=self.add(SnackButtonPress,name="0.25", relx=33)
+	self.dollar=self.add(SnackButtonPress,name="1.00", relx=33)
         # The mode button
-	self.mode=self.add(SnackButtonPress,name="MODE", relx=50)
+	self.mode=self.add(SnackButtonPress,name="MODE", relx=33)
 
         # Space for the current time
         self.date_widget = self.add(npyscreen.FixedText, value=datetime.now().ctime(), editable=False, rely=18)
@@ -92,10 +94,10 @@ class VirtualSnack(npyscreen.Form):
 
         # The Virtual Vending Machine
         for i in range(10):
-                self.add(npyscreen.FixedText, value=str(i), editable=False, relx=62, rely=4+i)
+                self.add(npyscreen.FixedText, value=str(i), editable=False, relx=47, rely=4+i)
         for slx in range(10):
                 self.slots.append([])
-                xpos = 64 + (slx * 2)
+                xpos = 49 + (slx * 2)
                 self.add(npyscreen.FixedText, value=str(slx), editable=False, relx=xpos, rely=3)
                 for sly in range(10):
                         ypos = 4 + sly
@@ -104,7 +106,35 @@ class VirtualSnack(npyscreen.Form):
                         else:
                                 self.slots[slx].append(self.add(npyscreen.FixedText, value="/", editable=False, relx=xpos, rely=ypos))
 
-        self.collectionslot = self.add(npyscreen.FixedText, value="PUSH", editable=False, relx=70, rely=15)
+        self.collectionslot = self.add(npyscreen.FixedText, value=" " * 8 + "PUSH", editable=False, relx=48, rely=15)
+
+        # Draw some fancy things to make it look fancy
+	# All the big things that can be done in bulk
+	# If you ever need to modify this, see http://en.wikipedia.org/wiki/Box-drawing_character
+	self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=2)
+        self.add(npyscreen.FixedText, value="???"*24, editable=False, relx=46, rely=14)
+        self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=16)
+	for i in range(3, 18):
+	    for j in [45, 74]:
+                self.add(npyscreen.FixedText, value="???", editable=False, relx=j, rely=i)
+	for i in range(3, 16):
+            self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=i)
+	# All the fine details
+	self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=2)
+	self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=2)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=2)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=14)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=14)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=16)
+        self.add(npyscreen.FixedText, value="?????????", editable=False, relx=45, rely=18)
+        self.add(npyscreen.FixedText, value="?????????", editable=False, relx=72, rely=18)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=17)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=17)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=16)
+
 
         # Ctrl + Q exits the application
 	self.add_handlers({"^Q": self.exit_application})
@@ -140,7 +170,7 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
         self.switches = Switches()
 	self.textdisplay = "*5N4CK0RZ*"
 
-	self.F = self.addForm("MAIN", VirtualSnack, name="Virtual Snack")
+	self.F = self.addForm("MAIN", VirtualSnack, name="Virtual Snack", columns=80, lines=24)
 	
 	# socket code
     	self.CONNECTION_LIST = []    # list of socket clients
