@@ -135,6 +135,8 @@ class VirtualSnack(npyscreen.Form):
         self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=16)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=16)
 
+        self.textdisplaymini = self.add(npyscreen.FixedText, value="??????", editable=False, relx=71, rely=5)
+        self.textdisplaymini.important = True
 
         # Ctrl + Q exits the application
         self.add_handlers({"^Q": self.exit_application})
