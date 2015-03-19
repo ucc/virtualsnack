@@ -109,19 +109,19 @@ class VirtualSnack(npyscreen.Form):
         self.collectionslot = self.add(npyscreen.FixedText, value=" " * 8 + "PUSH", editable=False, relx=48, rely=15)
 
         # Draw some fancy things to make it look fancy
-	# All the big things that can be done in bulk
-	# If you ever need to modify this, see http://en.wikipedia.org/wiki/Box-drawing_character
-	self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=2)
+        # All the big things that can be done in bulk
+        # If you ever need to modify this, see http://en.wikipedia.org/wiki/Box-drawing_character
+        self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=2)
         self.add(npyscreen.FixedText, value="???"*24, editable=False, relx=46, rely=14)
         self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=16)
-	for i in range(3, 18):
-	    for j in [45, 74]:
+        for i in range(3, 18):
+            for j in [45, 74]:
                 self.add(npyscreen.FixedText, value="???", editable=False, relx=j, rely=i)
-	for i in range(3, 16):
+        for i in range(3, 16):
             self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=i)
-	# All the fine details
-	self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=2)
-	self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=2)
+        # All the fine details
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=2)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=2)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=2)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=16)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=14)
@@ -137,11 +137,11 @@ class VirtualSnack(npyscreen.Form):
 
 
         # Ctrl + Q exits the application
-	self.add_handlers({"^Q": self.exit_application})
-	self.add_handlers({"^C": self.exit_application})
+        self.add_handlers({"^Q": self.exit_application})
+        self.add_handlers({"^C": self.exit_application})
         
         # Display info about what has been comminucated to and by the vending machine
-	self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False, rely=20 )
+        self.sentfield = self.add(npyscreen.TitleText, name = "Sent:", value="", editable=False, rely=20 )
         self.receivedfield = self.add(npyscreen.TitleText, name = "Received:", value="", editable=False )
 
     def exit_application(self,name):
