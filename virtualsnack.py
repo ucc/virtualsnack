@@ -106,36 +106,37 @@ class VirtualSnack(npyscreen.Form):
                         else:
                                 self.slots[slx].append(self.add(npyscreen.FixedText, value="/", editable=False, relx=xpos, rely=ypos))
 
-        self.collectionslot = self.add(npyscreen.FixedText, value=" " * 8 + "PUSH", editable=False, relx=48, rely=15)
+        self.collectionslot = self.add(npyscreen.FixedText, value="  PUSH", editable=False, relx=54, rely=15)
 
         # Draw some fancy things to make it look fancy
         # All the big things that can be done in bulk
         # If you ever need to modify this, see http://en.wikipedia.org/wiki/Box-drawing_character
         self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=2)
         self.add(npyscreen.FixedText, value="???"*24, editable=False, relx=46, rely=14)
-        self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=16)
-        for i in range(3, 18):
+        self.add(npyscreen.FixedText, value="???"*24, editable=False, relx=46, rely=16)
+        self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=18)
+        for i in range(3, 19):
             for j in [45, 74]:
                 self.add(npyscreen.FixedText, value="???", editable=False, relx=j, rely=i)
-        for i in range(3, 16):
+        for i in range(3, 18):
             self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=i)
         # All the fine details
         self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=2)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=2)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=2)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=18)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=14)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=18)
         self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=14)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=16)
-        self.add(npyscreen.FixedText, value="?????????", editable=False, relx=45, rely=18)
-        self.add(npyscreen.FixedText, value="?????????", editable=False, relx=72, rely=18)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=17)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=17)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=16)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=16)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=18)
+	self.add(npyscreen.FixedText, value="?????????", editable=False, relx=45, rely=19)
+	self.add(npyscreen.FixedText, value="?????????", editable=False, relx=72, rely=19)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=18)
+        self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=18)
 
-        self.textdisplaymini = self.add(npyscreen.FixedText, value="??????", editable=False, relx=71, rely=5)
+        self.textdisplaymini = self.add(npyscreen.FixedText, value="????????????", editable=False, relx=70, rely=5)
         self.textdisplaymini.important = True
 
         # Ctrl + Q exits the application
@@ -186,7 +187,7 @@ class VirtualSnackApp(npyscreen.NPSAppManaged):
         # Get the list sockets which are ready to be read through select
         try:
 	    read_sockets,write_sockets,error_sockets = select.select(self.CONNECTION_LIST,[],[],0.1)
-	except secket.error as e:
+	except socket.error as e:
 	    self.CONNECTION_LIST = []
 	    self.start_listening()
 
@@ -346,7 +347,12 @@ Mark Tearle, October 2014
             for pos in "-\|/-\|/":
                 self.F.slots[int(command[2])][int(command[1])].value = pos
                 self.F.display()
-                time.sleep(0.5)
+                time.sleep(0.4)
+            self.F.collectionslot.value = "*THUNK*"
+            self.F.display()
+            time.sleep(2)
+            self.F.collectionslot.value = "  PUSH"
+            self.F.display()
             self.do_send("100 Vend successful\n")
 
     def do_display(self,string):
