@@ -8,6 +8,7 @@ from datetime import datetime
 import socket, select, errno
 
 # for emulator code
+import os
 import sys
 import string
 import time
@@ -265,6 +266,7 @@ Dxxxxxxxxxx   show a message on the display
 ECHO {ON|OFF} turn echo on or off
 GETROM        download the ROM source code using xmodem
 H[...]        this help screen
+IDENTIFY      report ROM version
 *JUMPxxxx      jumps to a subroutine at location xxxx
 *PEEKxxxx      returns the value of the byte at location xxxx
 *POKExxxxyy    sets the value of location xxxx to yy
@@ -282,6 +284,13 @@ mode (DIP SW 1 is set)
 Commands starting with # are ignored (comments)
 """
         self.do_send(help)
+    
+    def do_identify(self):
+	mtime = datetime.fromtimestamp(os.path.getmtime(__file__))
+	time = mtime.strftime("%Y%m%d")
+	host = socket.gethostname()
+	identify = "086 VIRTUAL %s %s\n" % (host,time,)
+        self.do_send(identify)
 
     def do_about(self):
         about = """
@@ -332,6 +341,8 @@ Mark Tearle, October 2014
         command = string.upper(command)
         if string.find(command, "HELP",0) == 0:
             self.do_help()
+        elif string.find(command, "ID",0) == 0:
+            self.do_identify()
         elif string.find(command, "ECHO",0) == 0:
             self.do_echo()
         elif string.find(command, "ABOUT",0) == 0:
