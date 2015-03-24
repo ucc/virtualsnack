@@ -74,7 +74,7 @@ class VirtualSnack(npyscreen.Form):
 	self.door = self.add(npyscreen.MultiSelect, name = "Door", max_width=15, relx = 4, rely = 12, max_height=4, value = [], values = ["DOOR"], scroll_exit=True, value_changed_callback=self.parentApp.when_door_toggled)
 
         # The DIP switches
-	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 30, max_height=10, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
+	self.dip = self.add(npyscreen.MultiSelect, name = "DIP Switch", max_width=10, rely =3, relx = 30, max_height=8, value = [], values = ["DIP1", "DIP2", "DIP3","DIP4","DIP5","DIP6","DIP7","DIP8"], scroll_exit=True)
 
         # The coin buttons
 	self.nickel=self.add(SnackButtonPress,name="0.05", rely= 12, relx=33)
@@ -93,13 +93,13 @@ class VirtualSnack(npyscreen.Form):
         sloty = 0
 
         # The Virtual Vending Machine
-        for i in range(10):
+        for i in range(1,9):
                 self.add(npyscreen.FixedText, value=str(i), editable=False, relx=47, rely=4+i)
-        for slx in range(10):
+        for slx in range(0,10):
                 self.slots.append([])
                 xpos = 49 + (slx * 2)
                 self.add(npyscreen.FixedText, value=str(slx), editable=False, relx=xpos, rely=3)
-                for sly in range(10):
+                for sly in range(1,9):
                         ypos = 4 + sly
                         if sly == 5:
                                 self.slots[slx].append(None)
