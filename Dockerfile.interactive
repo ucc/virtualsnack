@@ -1,0 +1,33 @@
+# Dockerfile for virtualsnack
+
+# Run
+#
+#   docker run -tty -p 5150:5150 -i <images>
+
+
+FROM ubuntu:18.04
+LABEL maintainer "Mark Tearle - mtearle@ucc.asn.au"
+
+# Install required python packages (npyscreen, et al)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      python-setuptools \
+      python-pip 
+
+COPY requirements.txt /tmp
+
+RUN pip install -r /tmp/requirements.txt
+
+# Install virtual snack and run it
+
+RUN mkdir -p /app
+
+COPY virtualsnack.py /app
+
+WORKDIR /app
+
+# snack port
+EXPOSE 5150
+
+
+CMD ["/app/virtualsnack.py"]
