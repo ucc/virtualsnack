@@ -9,11 +9,52 @@ from datetime import datetime
 # Socket server in python using select function
 import socket, select, errno
 
+# for box characters
+import curses
+
 # for emulator code
 import os
 import sys
 import string
 import time
+
+class VerticalLine(npyscreen.FixedText):
+    def __init__(self, screen, line_height=1, *args, **keywords):
+        self.line_height = line_height
+	super(VerticalLine, self).__init__(screen, *args, **keywords)
+
+    def update(self, clear=True):
+        self.parent.curses_pad.vline(self.rely, self.relx, curses.ACS_VLINE, self.line_height) 
+
+class HorizontalLine(npyscreen.FixedText):
+    def __init__(self, screen, line_width=1, *args, **keywords):
+        self.line_width = line_width
+	super(HorizontalLine, self).__init__(screen, *args, **keywords)
+    
+    def update(self, clear=True):
+        self.parent.curses_pad.hline(self.rely, self.relx, curses.ACS_HLINE, self.line_width) 
+
+class Corner(npyscreen.FixedText):
+    def __init__(self, screen, corner_type=None, *args, **keywords):
+        self.corner_type = corner_type
+
+	super(Corner, self).__init__(screen, *args, **keywords)
+    
+    def update(self, clear=True):
+        corners = {}
+        corners["ULCORNER"] = curses.ACS_ULCORNER
+        corners["URCORNER"] = curses.ACS_URCORNER
+        corners["LLCORNER"] = curses.ACS_LLCORNER
+        corners["LRCORNER"] = curses.ACS_LRCORNER
+        corners["LTEE"] = curses.ACS_LTEE
+        corners["RTEE"] = curses.ACS_RTEE
+        corners["BTEE"] = curses.ACS_BTEE
+        corners["TTEE"] = curses.ACS_TTEE
+        corners["HLINE"] = curses.ACS_HLINE
+
+        corner = corners.get(self.corner_type,curses.ACS_BULLET)
+
+        self.parent.curses_pad.addch(self.rely, self.relx, corner) 
 
 class ContainedMultiSelect(npyscreen.BoxTitle):
     _contained_widget = npyscreen.TitleMultiSelect
@@ -111,32 +152,41 @@ class VirtualSnack(npyscreen.Form):
         # Draw some fancy things to make it look fancy
         # All the big things that can be done in bulk
         # If you ever need to modify this, see http://en.wikipedia.org/wiki/Box-drawing_character
-        self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=2)
-        self.add(npyscreen.FixedText, value="???"*24, editable=False, relx=46, rely=14)
-        self.add(npyscreen.FixedText, value="???"*24, editable=False, relx=46, rely=16)
-        self.add(npyscreen.FixedText, value="???"*28, editable=False, relx=46, rely=18)
-        for i in range(3, 19):
-            for j in [45, 74]:
-                self.add(npyscreen.FixedText, value="???", editable=False, relx=j, rely=i)
-        for i in range(3, 18):
-            self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=i)
-        # All the fine details
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=2)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=2)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=2)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=18)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=14)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=16)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=45, rely=18)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=14)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=69, rely=16)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=74, rely=18)
-	self.add(npyscreen.FixedText, value="?????????", editable=False, relx=45, rely=19)
-	self.add(npyscreen.FixedText, value="?????????", editable=False, relx=72, rely=19)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=47, rely=18)
-        self.add(npyscreen.FixedText, value="???", editable=False, relx=72, rely=18)
+        # See also
+        # http://www.melvilletheatre.com/articles/ncurses-extended-characters/index.html
+        # https://stackoverflow.com/questions/1279341/how-do-i-use-extended-characters-in-pythons-curses-library
+        #
+        self.add(HorizontalLine, line_width=28, value="-"*28, relx=46, rely=2)
+        self.add(HorizontalLine, line_width=24, value="-"*24, relx=46, rely=14)
+        self.add(HorizontalLine, line_width=24, value="-"*24, relx=46, rely=16)
+        self.add(HorizontalLine, line_width=28, value="-"*28, relx=46, rely=18)
+        
+        for j in [45, 74]:
+            self.add(VerticalLine, line_height=16, value="|", relx=j, rely=3)
+        self.add(VerticalLine, line_height=15, value="|", relx=69, rely=3)
+        
+        self.add(Corner, corner_type="ULCORNER", relx=45, rely=2)
+        self.add(Corner, corner_type="URCORNER", relx=74, rely=2)
+        self.add(Corner, corner_type="TTEE", relx=69, rely=2)
+        self.add(Corner, corner_type="BTEE", relx=69, rely=18)
+        self.add(Corner, corner_type="LTEE", relx=45, rely=14)
+        self.add(Corner, corner_type="LTEE", relx=45, rely=16)
+        self.add(Corner, corner_type="LTEE", relx=45, rely=18)
+        self.add(Corner, corner_type="RTEE", relx=69, rely=14)
+        self.add(Corner, corner_type="RTEE", relx=69, rely=16)
+        self.add(Corner, corner_type="RTEE", relx=74, rely=18)
+        # feet
+        self.add(Corner, corner_type="LLCORNER", relx=45, rely=19)
+        self.add(Corner, corner_type="HLINE", relx=46, rely=19)
+        self.add(Corner, corner_type="LRCORNER", relx=47, rely=19)
+        self.add(Corner, corner_type="LLCORNER", relx=72, rely=19)
+        self.add(Corner, corner_type="HLINE", relx=73, rely=19)
+        self.add(Corner, corner_type="LRCORNER", relx=74, rely=19)
 
-        self.textdisplaymini = self.add(npyscreen.FixedText, value="????????????", editable=False, relx=70, rely=5)
+        self.add(Corner, corner_type="TTEE", relx=47, rely=18)
+        self.add(Corner, corner_type="TTEE", relx=72, rely=18)
+
+        self.textdisplaymini = self.add(npyscreen.FixedText, value="====", editable=False, relx=70, rely=5)
         self.textdisplaymini.important = True
 
         # Ctrl + Q exits the application
